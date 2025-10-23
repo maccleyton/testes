@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Tiptap com Fórmulas Matemáticas</title>
+    
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .toolbar {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .toolbar button {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .toolbar button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .toolbar button.is-active {
+            background: #764ba2;
+            color: white;
+            border-color: #764ba2;
+        }
+        
+        .editor-wrapper {
+            padding: 30px;
+            min-height: 500px;
+        }
+        
+        .tiptap {
+            outline: none;
+            min-height: 450px;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .tiptap p {
+            margin-bottom: 10px;
+        }
+        
+        .tiptap h1 {
+            font-size: 32px;
+            margin: 20px 0 10px;
+            color: #667eea;
+        }
+        
+        .tiptap h2 {
+            font-size: 26px;
+            margin: 18px 0 8px;
+            color: #764ba2;
+        }
+        
+        .tiptap h3 {
+            font-size: 22px;
+            margin: 16px 0 6px;
+            color: #667eea;
+        }
+        
+        .tiptap ul,
+        .tiptap ol {
+            padding-left: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .tiptap code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #764ba2;
+        }
+        
+        .tiptap blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Estilos para nós matemáticos */
+        .math-inline {
+            display: inline-block;
+            background: #f0f4ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
+            border: 1px solid #d0d9ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .math-inline:hover {
+            background: #e0e9ff;
+        }
+        
+        .math-block {
+            display: block;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .math-block:hover {
+            background: #f0f4ff;
+        }
+        
+        .math-selected {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        /* Placeholder */
+        .tiptap p.is-editor-empty:first-child::before {
+            content: "Digite seu texto aqui... Use $formula$ para matemática inline";
+            color: #aaa;
+            pointer-events: none;
+            height: 0;
+            float: left;
+        }
+        
+        .instructions {
+            background: #f0f4ff;
+            padding: 20px;
+            border-top: 2px solid #e0e0e0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .instructions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        .instructions code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Editor Tiptap com Fórmulas Matemáticas</h1>
+            <p>Editor moderno com suporte a LaTeX via KaTeX</p>
+        </div>
+        
+        <div class="toolbar" id="toolbar">
+            <button onclick="editor.chain().focus().toggleBold().run()" 
+                    class="bold-btn">
+                <strong>Negrito</strong>
+            </button>
+            <button onclick="editor.chain().focus().toggleItalic().run()"
+                    class="italic-btn">
+                <em>Itálico</em>
+            </button>
+            <button onclick="editor.chain().focus().toggleCode().run()"
+                    class="code-btn">
+                <code>Código</code>
+            </button>
+            <button onclick="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+                    class="h1-btn">
+                H1
+            </button>
+            <button onclick="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+                    class="h2-btn">
+                H2
+            </button>
+            <button onclick="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+                    class="h3-btn">
+                H3
+            </button>
+            <button onclick="editor.chain().focus().toggleBulletList().run()"
+                    class="ul-btn">
+                Lista
+            </button>
+            <button onclick="editor.chain().focus().toggleBlockquote().run()"
+                    class="quote-btn">
+                Citação
+            </button>
+            <button onclick="insertInlineMath()">
+                Fórmula Inline ($)
+            </button>
+            <button onclick="insertBlockMath()">
+                Fórmula Display ($$)
+            </button>
+            <button onclick="clearContent()">
+                Limpar
+            </button>
+            <button onclick="getHTML()">
+                Ver HTML
+            </button>
+            <button onclick="getMarkdown()">
+                Ver Markdown
+            </button>
+        </div>
+        
+        <div class="editor-wrapper">
+            <div id="editor"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 Instruções de Uso:</h3>
+            <ul>
+                <li><strong>Fórmula inline:</strong> Digite <code>$x^2 + y^2 = z^2$</code> e pressione espaço</li>
+                <li><strong>Fórmula display:</strong> Digite <code>$$integral$$</code> e pressione espaço</li>
+                <li><strong>Editar fórmula:</strong> Clique na fórmula renderizada para editá-la</li>
+                <li><strong>Exemplos LaTeX:</strong> <code>\int_0^\infty</code>, <code>\frac{a}{b}</code>, <code>\sum_{i=1}^n</code></li>
+                <li><strong>Atalhos:</strong> Ctrl+B (negrito), Ctrl+I (itálico), Ctrl+Shift+8 (lista)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- KaTeX -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <!-- Tiptap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/core@2.1.13/dist/tiptap-core.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.1.13/dist/tiptap-starter-kit.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tiptap/extension-placeholder@2.1.13/dist/tiptap-extension-placeholder.umd.min.js"></script>
+
+    <script>
+        // Extensão customizada para matemática inline
+        const MathInline = window.TiptapCore.Node.create({
+            name: 'mathInline',
+            group: 'inline',
+            inline: true,
+            atom: true,
+            
+            addAttributes() {
+                return {
+                    latex: {
+                        default: ''
+                    }
+                };
+            },
+            
+            parseHTML() {
+                return [{ tag: 'span.math-inline' }];
+            },
+            
+            renderHTML({ node }) {
+                const span = document.createElement('span');
+                span.className = 'math-inline';
+                
+                try {
+                    katex.render(node.attrs.latex, span, {
+                        throwOnError: false,
+                        displayMode: false
+                    });
+                } catch (e) {
+                    span.textContent = node.attrs.latex;
+                }
+                
+                return ['span', { class: 'math-inline' }, 0];
+            },
+            
+            addNodeView() {
+                return ({ node, editor, getPos }) => {
+                    const dom = document.createElement('span');
+                    dom.className = 'math-inline';
+                    
+                    const renderMath = () => {
+                        try {
+                            katex.render(node.attrs.latex, dom, {
+                                throwOnError: false,
+                                displayMode: false
+                            });
+                        } catch (e) {
+                            dom.textContent = node.attrs.latex;
+                        }
+                    };
+                    
+                    renderMath();
+                    
+                    dom.addEventListener('click', () => {
+                        const newLatex = prompt('Editar fórmula LaTeX:', node.attrs.latex);
+                        if (newLatex !== null) {
+                            editor.commands.updateAttributes('mathInline', { latex: newLatex });
+                        }
+                    });
+                    
+                    return {
+                        dom,
+                        update: (updatedNode) => {
+                            if (updatedNode.type.name !== 'mathInline') return false;
+                            renderMath();
+                            return true;
+                        }
+                    };
+                };
+            },
+            
+            addInputRules() {
+                return [
+                    window.TiptapCore.InputRule({
+                        find: /\$([^$]+)\$\s$/,
+                        handler: ({ state, range, match }) => {
+                            const { tr } = state;
+                            const start = range.from;
+                            const end = range.to;
+                            
+                            tr.replaceWith(start, end, this.type.create({ latex: match[1] }));
+                        }
+                    })
+                ];
+            }
+        });
+
+        // Extensão customizada para matemática em bloco
+        const MathBlock = window.TiptapCore.Node.create({
+            name: 'mathBlock',
+            group: 'block',
+            atom: true,
+            
+            addAttributes() {
+                return {
+                    latex: {
+                        default: ''
+                    }
+                };
+            },
+            
+            parseHTML() {
+                return [{ tag: 'div.math-block' }];
+            },
+            
+            renderHTML({ node }) {
+                return ['div', { class: 'math-block' }, 0];
+            },
+            
+            addNodeView() {
+                return ({ node, editor, getPos }) => {
+                    const dom = document.createElement('div');
+                    dom.className = 'math-block';
+                    
+                    const renderMath = () => {
+                        try {
+                            katex.render(node.attrs.latex, dom, {
+                                throwOnError: false,
+                                displayMode: true
+                            });
+                        } catch (e) {
+                            dom.textContent = node.attrs.latex;
+                        }
+                    };
+                    
+                    renderMath();
+                    
+                    dom.addEventListener('click', () => {
+                        const newLatex = prompt('Editar fórmula LaTeX:', node.attrs.latex);
+                        if (newLatex !== null) {
+                            editor.commands.updateAttributes('mathBlock', { latex: newLatex });
+                        }
+                    });
+                    
+                    return {
+                        dom,
+                        update: (updatedNode) => {
+                            if (updatedNode.type.name !== 'mathBlock') return false;
+                            renderMath();
+                            return true;
+                        }
+                    };
+                };
+            },
+            
+            addInputRules() {
+                return [
+                    window.TiptapCore.InputRule({
+                        find: /^\$\$([^$]*)\$\$\s$/,
+                        handler: ({ state, range, match }) => {
+                            const { tr } = state;
+                            const start = range.from;
+                            const end = range.to;
+                            
+                            tr.replaceWith(start - 1, end, this.type.create({ latex: match[1] || '' }));
+                        }
+                    })
+                ];
+            }
+        });
+
+        // Criar o editor
+        let editor;
+
+        window.addEventListener('load', () => {
+            editor = new window.TiptapCore.Editor({
+                element: document.querySelector('#editor'),
+                extensions: [
+                    window.TiptapStarterKit.StarterKit.configure({
+                        heading: {
+                            levels: [1, 2, 3]
+                        }
+                    }),
+                    window.TiptapExtensionPlaceholder.Placeholder.configure({
+                        placeholder: 'Digite seu texto aqui... Use $formula$ para matemática inline'
+                    }),
+                    MathInline,
+                    MathBlock
+                ],
+                content: `
+                    <h1>Bem-vindo ao Editor Tiptap</h1>
+                    <p>Este é um editor moderno com suporte completo a fórmulas matemáticas usando LaTeX.</p>
+                    <h2>Exemplos de Fórmulas</h2>
+                    <p>Experimente digitar uma fórmula inline como: $E = mc^2$ (e pressione espaço)</p>
+                    <p>Ou uma fórmula display:</p>
+                    <p>$$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$</p>
+                    <h3>Recursos Disponíveis</h3>
+                    <ul>
+                        <li>Formatação de texto rica</li>
+                        <li>Títulos e listas</li>
+                        <li>Fórmulas matemáticas inline e display</li>
+                        <li>Exportação para HTML e Markdown</li>
+                    </ul>
+                `,
+                onUpdate: () => {
+                    updateToolbar();
+                }
+            });
+            
+            updateToolbar();
+        });
+
+        // Funções auxiliares
+        function insertInlineMath() {
+            const latex = prompt('Digite a fórmula LaTeX:', 'x^2 + y^2');
+            if (latex) {
+                editor.chain().focus().insertContent({
+                    type: 'mathInline',
+                    attrs: { latex }
+                }).run();
+            }
+        }
+
+        function insertBlockMath() {
+            const latex = prompt('Digite a fórmula LaTeX:', '\\int_0^\\infty f(x) dx');
+            if (latex) {
+                editor.chain().focus().insertContent({
+                    type: 'mathBlock',
+                    attrs: { latex }
+                }).run();
+            }
+        }
+
+        function clearContent() {
+            if (confirm('Deseja limpar todo o conteúdo?')) {
+                editor.commands.clearContent();
+            }
+        }
+
+        function getHTML() {
+            const html = editor.getHTML();
+            alert('HTML:\n\n' + html);
+        }
+
+        function getMarkdown() {
+            // Conversão simples para Markdown
+            let content = '';
+            const json = editor.getJSON();
+            
+            function processNode(node, level = 0) {
+                if (node.type === 'heading') {
+                    content += '#'.repeat(node.attrs.level) + ' ';
+                    node.content?.forEach(child => processNode(child, level));
+                    content += '\n\n';
+                } else if (node.type === 'paragraph') {
+                    node.content?.forEach(child => processNode(child, level));
+                    content += '\n\n';
+                } else if (node.type === 'text') {
+                    let text = node.text;
+                    if (node.marks) {
+                        node.marks.forEach(mark => {
+                            if (mark.type === 'bold') text = `**${text}**`;
+                            if (mark.type === 'italic') text = `*${text}*`;
+                            if (mark.type === 'code') text = `\`${text}\``;
+                        });
+                    }
+                    content += text;
+                } else if (node.type === 'mathInline') {
+                    content += `$${node.attrs.latex}$`;
+                } else if (node.type === 'mathBlock') {
+                    content += `\n$$\n${node.attrs.latex}\n$$\n`;
+                } else if (node.type === 'bulletList') {
+                    node.content?.forEach(child => processNode(child, level + 1));
+                } else if (node.type === 'listItem') {
+                    content += '- ';
+                    node.content?.forEach(child => processNode(child, level));
+                } else if (node.type === 'blockquote') {
+                    content += '> ';
+                    node.content?.forEach(child => processNode(child, level));
+                }
+            }
+            
+            json.content?.forEach(node => processNode(node));
+            
+            alert('Markdown:\n\n' + content);
+        }
+
+        function updateToolbar() {
+            if (!editor) return;
+            
+            // Atualizar classes ativas dos botões
+            document.querySelector('.bold-btn')?.classList.toggle('is-active', 
+                editor.isActive('bold'));
+            document.querySelector('.italic-btn')?.classList.toggle('is-active', 
+                editor.isActive('italic'));
+            document.querySelector('.code-btn')?.classList.toggle('is-active', 
+                editor.isActive('code'));
+            document.querySelector('.h1-btn')?.classList.toggle('is-active', 
+                editor.isActive('heading', { level: 1 }));
+            document.querySelector('.h2-btn')?.classList.toggle('is-active', 
+                editor.isActive('heading', { level: 2 }));
+            document.querySelector('.h3-btn')?.classList.toggle('is-active', 
+                editor.isActive('heading', { level: 3 }));
+            document.querySelector('.ul-btn')?.classList.toggle('is-active', 
+                editor.isActive('bulletList'));
+            document.querySelector('.quote-btn')?.classList.toggle('is-active', 
+                editor.isActive('blockquote'));
+        }
+    </script>
+</body>
+</html>

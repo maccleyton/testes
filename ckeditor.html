@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor CKEditor 5 com Fórmulas Matemáticas</title>
+    
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .editor-wrapper {
+            padding: 20px;
+            min-height: 600px;
+        }
+        
+        .ck-editor__editable {
+            min-height: 500px;
+        }
+        
+        /* Estilos para fórmulas matemáticas */
+        .math-tex {
+            display: inline-block;
+            background: #f0f4ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin: 0 2px;
+            border: 1px solid #d0d9ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .math-tex:hover {
+            background: #e0e9ff;
+            border-color: #667eea;
+        }
+        
+        span.math-tex[data-display="true"] {
+            display: block;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+        
+        .instructions {
+            background: #f0f4ff;
+            padding: 20px;
+            border-top: 2px solid #e0e0e0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .instructions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #764ba2;
+            font-weight: bold;
+        }
+        
+        .instructions code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #764ba2;
+        }
+        
+        /* Customização do toolbar do CKEditor */
+        .ck.ck-toolbar {
+            border: none !important;
+            background: #f5f5f5 !important;
+            padding: 10px !important;
+        }
+        
+        .ck.ck-button {
+            border-radius: 6px !important;
+        }
+        
+        .ck.ck-button:hover {
+            background: #667eea !important;
+            color: white !important;
+        }
+        
+        .ck.ck-button.ck-on {
+            background: #764ba2 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Editor CKEditor 5 com Fórmulas Matemáticas</h1>
+            <p>Editor profissional com suporte completo a LaTeX via KaTeX</p>
+        </div>
+        
+        <div class="editor-wrapper">
+            <div id="editor">
+                <h1>Bem-vindo ao CKEditor 5</h1>
+                <p>Este é um editor profissional e poderoso com suporte completo a fórmulas matemáticas LaTeX.</p>
+                
+                <h2>Fórmulas Inline</h2>
+                <p>Você pode inserir fórmulas inline como a famosa equação de Einstein: <span class="math-tex">\( E = mc^2 \)</span> ou o teorema de Pitágoras: <span class="math-tex">\( a^2 + b^2 = c^2 \)</span>.</p>
+                
+                <h2>Fórmulas Display</h2>
+                <p>Para fórmulas mais complexas, use o modo display:</p>
+                <span class="math-tex" data-display="true">\[ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} \]</span>
+                
+                <p>Ou a série de Taylor:</p>
+                <span class="math-tex" data-display="true">\[ f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(a)}{n!}(x-a)^n \]</span>
+                
+                <h2>Recursos Incluídos</h2>
+                <ul>
+                    <li>Formatação rica de texto</li>
+                    <li>Suporte completo a LaTeX</li>
+                    <li>Fórmulas inline e display</li>
+                    <li>Tabelas e listas</li>
+                    <li>Imagens e links</li>
+                    <li>Exportação HTML</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 Instruções de Uso:</h3>
+            <ul>
+                <li><strong>Inserir fórmula:</strong> Use os botões "Math Inline" ou "Math Display" na barra de ferramentas</li>
+                <li><strong>Editar fórmula:</strong> Clique duas vezes na fórmula para editá-la</li>
+                <li><strong>Sintaxe inline:</strong> <code>\( x^2 + y^2 = z^2 \)</code></li>
+                <li><strong>Sintaxe display:</strong> <code>\[ \int_0^\infty f(x) dx \]</code></li>
+                <li><strong>Exemplos LaTeX:</strong> <code>\frac{a}{b}</code>, <code>\sqrt{x}</code>, <code>\sum_{i=1}^n</code></li>
+                <li><strong>Atalhos:</strong> Ctrl+B (negrito), Ctrl+I (itálico), Ctrl+K (link)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- KaTeX -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <!-- CKEditor 5 -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
+    
+    <script>
+        // Plugin customizado para matemática
+        class MathPlugin {
+            constructor(editor) {
+                this.editor = editor;
+            }
+            
+            init() {
+                const editor = this.editor;
+                
+                // Registrar o comando para inserir matemática inline
+                editor.commands.add('insertMathInline', {
+                    execute: () => {
+                        const latex = prompt('Digite a fórmula LaTeX (inline):', 'x^2 + y^2 = z^2');
+                        if (latex) {
+                            const viewFragment = editor.data.processor.toView(
+                                `<span class="math-tex">\\( ${latex} \\)</span>`
+                            );
+                            const modelFragment = editor.data.toModel(viewFragment);
+                            editor.model.insertContent(modelFragment);
+                        }
+                    }
+                });
+                
+                // Registrar o comando para inserir matemática display
+                editor.commands.add('insertMathDisplay', {
+                    execute: () => {
+                        const latex = prompt('Digite a fórmula LaTeX (display):', '\\int_0^\\infty e^{-x^2} dx');
+                        if (latex) {
+                            const viewFragment = editor.data.processor.toView(
+                                `<span class="math-tex" data-display="true">\\[ ${latex} \\]</span>`
+                            );
+                            const modelFragment = editor.data.toModel(viewFragment);
+                            editor.model.insertContent(modelFragment);
+                        }
+                    }
+                });
+                
+                // Adicionar botões na toolbar
+                editor.ui.componentFactory.add('mathInline', locale => {
+                    const button = new ClassicEditor.builtinPlugins.find(
+                        plugin => plugin.constructor.pluginName === 'ButtonView'
+                    ).constructor(locale);
+                    
+                    button.set({
+                        label: 'Math Inline ($)',
+                        tooltip: true,
+                        withText: true
+                    });
+                    
+                    button.on('execute', () => {
+                        editor.execute('insertMathInline');
+                    });
+                    
+                    return button;
+                });
+                
+                editor.ui.componentFactory.add('mathDisplay', locale => {
+                    const button = new ClassicEditor.builtinPlugins.find(
+                        plugin => plugin.constructor.pluginName === 'ButtonView'
+                    ).constructor(locale);
+                    
+                    button.set({
+                        label: 'Math Display ($$)',
+                        tooltip: true,
+                        withText: true
+                    });
+                    
+                    button.on('execute', () => {
+                        editor.execute('insertMathDisplay');
+                    });
+                    
+                    return button;
+                });
+            }
+        }
+        
+        // Inicializar o CKEditor
+        let editor;
+        
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: {
+                    items: [
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikethrough',
+                        'code',
+                        '|',
+                        'link',
+                        'bulletedList',
+                        'numberedList',
+                        '|',
+                        'outdent',
+                        'indent',
+                        '|',
+                        'blockQuote',
+                        'insertTable',
+                        '|',
+                        'mathInline',
+                        'mathDisplay',
+                        '|',
+                        'undo',
+                        'redo'
+                    ]
+                },
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Parágrafo', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Título 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Título 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Título 3', class: 'ck-heading_heading3' }
+                    ]
+                },
+                table: {
+                    contentToolbar: [
+                        'tableColumn',
+                        'tableRow',
+                        'mergeTableCells'
+                    ]
+                },
+                language: 'pt-br',
+                extraPlugins: [MathPlugin]
+            })
+            .then(newEditor => {
+                editor = newEditor;
+                console.log('CKEditor 5 carregado com sucesso!');
+                
+                // Renderizar fórmulas matemáticas existentes
+                renderMath();
+                
+                // Observar mudanças no editor para re-renderizar fórmulas
+                editor.model.document.on('change:data', () => {
+                    setTimeout(renderMath, 100);
+                });
+                
+                // Adicionar suporte a double-click para editar fórmulas
+                editor.editing.view.document.on('dblclick', (evt, data) => {
+                    const target = data.target;
+                    
+                    if (target && target.hasClass && target.hasClass('math-tex')) {
+                        const mathElement = target;
+                        const isDisplay = mathElement.getAttribute('data-display') === 'true';
+                        const currentLatex = mathElement.getChild(0).data
+                            .replace(/\\\(|\\\)/g, '')
+                            .replace(/\\\[|\\\]/g, '')
+                            .trim();
+                        
+                        const newLatex = prompt(
+                            `Editar fórmula LaTeX (${isDisplay ? 'display' : 'inline'}):`,
+                            currentLatex
+                        );
+                        
+                        if (newLatex !== null && newLatex !== currentLatex) {
+                            const wrapper = isDisplay ? '\\[' : '\\(';
+                            const wrapperEnd = isDisplay ? '\\]' : '\\)';
+                            
+                            editor.model.change(writer => {
+                                const range = editor.model.createRangeOn(
+                                    editor.editing.mapper.toModelElement(mathElement)
+                                );
+                                
+                                const viewFragment = editor.data.processor.toView(
+                                    `<span class="math-tex"${isDisplay ? ' data-display="true"' : ''}>${wrapper} ${newLatex} ${wrapperEnd}</span>`
+                                );
+                                const modelFragment = editor.data.toModel(viewFragment);
+                                
+                                writer.remove(range);
+                                writer.insert(modelFragment, range.start);
+                            });
+                        }
+                        
+                        data.preventDefault();
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar CKEditor:', error);
+            });
+        
+        // Função para renderizar fórmulas matemáticas com KaTeX
+        function renderMath() {
+            const mathElements = document.querySelectorAll('.ck-content .math-tex');
+            
+            mathElements.forEach(element => {
+                const latex = element.textContent
+                    .replace(/\\\(|\\\)/g, '')
+                    .replace(/\\\[|\\\]/g, '')
+                    .trim();
+                
+                const isDisplay = element.getAttribute('data-display') === 'true';
+                
+                if (latex) {
+                    try {
+                        katex.render(latex, element, {
+                            displayMode: isDisplay,
+                            throwOnError: false,
+                            trust: true
+                        });
+                    } catch (e) {
+                        console.error('Erro ao renderizar:', e);
+                        element.textContent = latex;
+                        element.style.color = 'red';
+                    }
+                }
+            });
+        }
+        
+        // Função auxiliar para obter HTML
+        function getEditorHTML() {
+            if (editor) {
+                const html = editor.getData();
+                console.log('HTML:', html);
+                alert('HTML copiado para o console!');
+            }
+        }
+        
+        // Adicionar botão para visualizar HTML (opcional)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+                getEditorHTML();
+            }
+        });
+    </script>
+</body>
+</html>

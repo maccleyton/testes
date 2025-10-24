@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor ProseMirror com LaTeX</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #sidebar {
+      width: 250px;
+      padding: 20px;
+      background: #f0f0f0;
+      border-right: 1px solid #ccc;
+    }
+    #editor {
+      flex: 1;
+      padding: 20px;
+      min-height: 100vh;
+      border-left: 1px solid #ccc;
+    }
+    .latex-block {
+      background: #eef;
+      padding: 5px;
+      margin: 5px 0;
+      border-radius: 4px;
+    }
+  </style>
+  <!-- ProseMirror dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-state@1.3.4/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-view@1.29.1/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-model@1.18.2/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-transform@1.7.0/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-schema-basic@1.2.1/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-commands@1.5.0/dist/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prosemirror-keymap@1.2.0/dist/index.min.js"></script>
+  <!-- MathJax -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Configurações</h3>
+    <label>Margem: <input type="number" id="margin" value="20"></label><br><br>
+    <label>Fonte: <select id="font">
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select></label><br><br>
+    <label>Espaçamento: <input type="number" id="spacing" value="1.5" step="0.1"></label><br><br>
+    <label>Orientação:
+      <select id="orientation">
+        <option value="portrait">Retrato</option>
+        <option value="landscape">Paisagem</option>
+      </select>
+    </label>
+  </div>
+  <div id="editor"></div>
+
+  <script>
+    const {EditorState} = window['prosemirror-state'];
+    const {EditorView} = window['prosemirror-view'];
+    const {Schema, DOMParser} = window['prosemirror-model'];
+    const {schema} = window['prosemirror-schema-basic'];
+    const {baseKeymap} = window['prosemirror-commands'];
+    const {keymap} = window['prosemirror-keymap'];
+
+    const mySchema = new Schema({
+      nodes: schema.spec.nodes,
+      marks: schema.spec.marks
+    });
+
+    const view = new EditorView(document.querySelector("#editor"), {
+      state: EditorState.create({
+        doc: mySchema.topNodeType.createAndFill(),
+        plugins: [keymap(baseKeymap)]
+      })
+    });
+
+    // Inserir LaTeX
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        const latex = prompt("Digite o código LaTeX:");
+        if (latex) {
+          const node = document.createElement("div");
+          node.className = "latex-block";
+          node.innerHTML = `\(${latex}\)`;
+          view.dom.appendChild(node);
+          MathJax.typeset();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

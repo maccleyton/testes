@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor ProseMirror com LaTeX Inline</title>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    body {
+      display: flex;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    #sidebar {
+      width: 250px;
+      padding: 20px;
+      background: #f0f0f0;
+      border-right: 1px solid #ccc;
+    }
+    #editor {
+      flex: 1;
+      padding: 20px;
+      min-height: 100vh;
+      outline: none;
+    }
+    button {
+      display: block;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Barra Lateral</h3>
+    <button onclick="insertLatexInline()">Inserir LaTeX Inline</button>
+    <button onclick="renderLatexInline()">Renderizar LaTeX Inline</button>
+    <button onclick="insertCodeBlock()">Inserir Código</button>
+    <button onclick="renderCodeBlock()">Renderizar Código</button>
+  </div>
+  <div id="editor" contenteditable="true">
+    Digite seu conteúdo aqui...
+  </div>
+
+  <script>
+    function insertLatexInline() {
+      const latex = prompt("Digite o LaTeX inline (sem \( \)):");
+      if (latex) {
+        document.execCommand("insertHTML", false, `\(${latex}\)`);
+      }
+    }
+
+    function renderLatexInline() {
+      MathJax.typeset();
+    }
+
+    function insertCodeBlock() {
+      const code = prompt("Digite o código:");
+      if (code) {
+        document.execCommand("insertHTML", false, `<pre><code>${code}</code></pre>`);
+      }
+    }
+
+    function renderCodeBlock() {
+      const codes = document.querySelectorAll("pre code");
+      codes.forEach(block => {
+        block.style.background = "#eee";
+        block.style.padding = "10px";
+        block.style.borderRadius = "5px";
+        block.style.fontFamily = "monospace";
+      });
+    }
+  </script>
+</body>
+</html>

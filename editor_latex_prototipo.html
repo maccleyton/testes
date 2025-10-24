@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Editor CKEditor Ultra com LaTeX</title>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #sidebar {
+            width: 250px;
+            background: #f4f4f4;
+            padding: 20px;
+            border-right: 1px solid #ccc;
+        }
+        #editor-container {
+            flex: 1;
+            padding: 20px;
+        }
+        #editor {
+            min-height: 600px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>Configurações</h3>
+        <label>Margem:</label><br>
+        <input type="range" min="0" max="100" value="20"><br><br>
+
+        <label>Fonte:</label><br>
+        <select>
+            <option>Arial</option>
+            <option>Times New Roman</option>
+            <option>Courier New</option>
+        </select><br><br>
+
+        <label>Espaçamento:</label><br>
+        <input type="number" value="1.5" step="0.1"><br><br>
+
+        <label>Orientação:</label><br>
+        <select>
+            <option>Retrato</option>
+            <option>Paisagem</option>
+        </select>
+    </div>
+
+    <div id="editor-container">
+        <div id="editor">Digite seu texto aqui...<br><br>Para inserir LaTeX, use o botão abaixo.</div>
+        <button onclick="inserirLatex()">Inserir Fórmula LaTeX</button>
+    </div>
+
+    <script>
+        let editorInstance;
+        ClassicEditor
+            .create(document.querySelector('#editor'))
+            .then(editor => {
+                editorInstance = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function inserirLatex() {
+            const latexCode = prompt("Digite o código LaTeX:");
+            if (latexCode) {
+                const latexHTML = `<span class='latex'>\(${latexCode}\)</span>`;
+                editorInstance.model.change(writer => {
+                    const viewFragment = editorInstance.data.processor.toView(latexHTML);
+                    const modelFragment = editorInstance.data.toModel(viewFragment);
+                    editorInstance.model.insertContent(modelFragment);
+                });
+                setTimeout(() => MathJax.typeset(), 100); // Renderiza fórmula
+            }
+        }
+    </script>
+</body>
+</html>

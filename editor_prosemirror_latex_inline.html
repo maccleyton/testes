@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor ProseMirror com LaTeX Inline</title>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    body {
+      display: flex;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    #sidebar {
+      width: 250px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-right: 1px solid #ccc;
+    }
+    #editor {
+      flex: 1;
+      padding: 20px;
+      min-height: 100vh;
+      outline: none;
+    }
+    .latex {
+      background: #eef;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: 'Times New Roman', serif;
+    }
+    .code {
+      background: #222;
+      color: #0f0;
+      padding: 4px;
+      font-family: monospace;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Ferramentas</h3>
+    <button onclick="insertLatex()">Inserir LaTeX</button>
+    <button onclick="renderLatex()">Renderizar LaTeX</button>
+    <button onclick="insertCode()">Inserir Código</button>
+    <button onclick="renderCode()">Renderizar Código</button>
+  </div>
+  <div id="editor" contenteditable="true"></div>
+
+  <script>
+    function insertLatex() {
+      const latex = prompt("Digite o código LaTeX:");
+      if (latex) {
+        document.execCommand("insertHTML", false, `<span class='latex'>\(${latex}\)</span>`);
+      }
+    }
+
+    function renderLatex() {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const container = document.createElement("span");
+        container.innerHTML = range.toString();
+        container.className = "latex";
+        range.deleteContents();
+        range.insertNode(container);
+        MathJax.typesetPromise([container]);
+      }
+    }
+
+    function insertCode() {
+      const code = prompt("Digite o código:");
+      if (code) {
+        document.execCommand("insertHTML", false, `<pre class='code'>${code}</pre>`);
+      }
+    }
+
+    function renderCode() {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const container = document.createElement("pre");
+        container.textContent = range.toString();
+        container.className = "code";
+        range.deleteContents();
+        range.insertNode(container);
+      }
+    }
+  </script>
+</body>
+</html>

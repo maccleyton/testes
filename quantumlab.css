@@ -412,14 +412,12 @@ input[type="number"]:focus {
 
 .nav-tab.active {
 	background: var(--quantum-blue);
-	background: var(--thermal-orange); 
 	border-color: var(--quantum-blue);
 	box-shadow:0 0 0 2px rgba(59,130,246,.25) inset
 }
 
 .nav-tab:hover {
 	background: rgba(37, 99, 235, 0.3);
-	background: rgba(249, 115, 22, 0.3);
 }
 
 .nav-tab:focus-visible {
@@ -1293,15 +1291,6 @@ input[type="range"]::-moz-range-thumb {
 	box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
 
-.visualization-area {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-}
-
 .atom {
 	position: absolute;
 	border-radius: 50%;
@@ -1436,8 +1425,11 @@ input[type="range"]::-moz-range-thumb {
 	transform: translateX(-50%);
 	background: rgba(0,0,0,0.7);
 	padding: 15px 25px;
+	inset: 0;                       /* garante preenchimento total */
+	pointer-events: none;           /* já previsto onde necessário */
 	border-radius: 10px;
 	border: 2px solid var(--reaction-green);
+	z-index: 1;              /* abaixo do display, acima do fundo */
 }
 
 .reaction-equation {
@@ -1621,9 +1613,11 @@ input[type="range"]::-moz-range-thumb {
 	left: 0;
 	width: 100%;
 	height: 100%;
+	inset: 0;                       /* garante preenchimento total */
 	pointer-events: none;
 	opacity: 0;
 	transition: opacity 0.5s ease;
+	z-index: 1;              /* abaixo do display, acima do fundo */
 }
 
 .field-line {
@@ -1647,13 +1641,16 @@ input[type="range"]::-moz-range-thumb {
 	transform: translateX(-50%) rotate(135deg);
 }
 
+/* Overlays continuam cobrindo toda a área do contêiner do canvas */
 .thermal-particles {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	pointer-events: none;
+	inset: 0;                       /* garante preenchimento total */
+	pointer-events: none;           /* já previsto onde necessário */
+	z-index: 1;              /* abaixo do display, acima do fundo */
 }
 
 .thermal-particle {
@@ -2324,20 +2321,6 @@ input[type="range"]::-moz-range-thumb {
 	box-shadow: 0 0 15px currentColor;
 }
 
-
-.element-info-panel {
-	position: absolute;
-	top: 20px;
-	right: 20px;
-	background: rgba(15, 23, 42, 0.95);
-	border: 1px solid var(--grid-gray);
-	border-radius: 10px;
-	padding: 20px;
-	width: 300px;
-	backdrop-filter: blur(10px);
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
 .element-header {
 	display: flex;
 	align-items: center;
@@ -2745,4 +2728,126 @@ input[type="range"]::-moz-range-thumb {
 	.sheet {
 		transform: scale(0.65);
 	}
+}
+
+
+/*------------------------------------------------------------*/
+
+/* ===== Visualização: esquerda = controles, centro = canvas, direita = info ===== */
+.visualization-area {
+  display: grid !important;
+  grid-template-columns: 320px minmax(680px, 1fr) 420px; /* left | stage | right */
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "left stage info"
+    "left stage reaction"
+    "left stage .";
+  gap: 16px;
+  align-items: start;
+  position: relative;
+  grid-auto-flow: row dense;
+}
+
+/* Centraliza o conteúdo da cena dentro da célula do canvas */
+#atom-canvas,
+.atom-canvas {
+  grid-area: stage !important;
+  position: relative !important;  /* já existe, mantemos */
+  display: grid;                  /* vira grid container */
+  place-items: center;            /* centra horizontal e vertical */
+  min-height: 560px;
+  z-index: 0;
+  overflow: hidden;        /* corta partículas que extrapolem */
+  border-radius: 15px;
+}
+
+/* O display (500x500) fica exatamente no centro do contêiner */
+#atom-display,
+.atom-display {
+  position: relative !important;  /* nada de left/top aqui */
+  margin: 0;                      /* remove qualquer margem acidental */
+  width: 500px;                   /* mantém centro em 250px, se sua lógica usa isso */
+  height: 500px;
+  z-index: 2;                     /* conteúdo da cena acima do fundo do canvas */
+}
+
+/* Direita topo: informações do átomo, sempre visível */
+#element-info {
+  grid-area: info !important;
+  position: sticky !important;
+  top: 16px;               /* ajuste conforme a altura do header */
+  margin: 0;
+  z-index: 2;
+}
+
+/* Direita logo abaixo: “Átomo Selecionado” */
+.reaction-panel {
+  grid-area: reaction !important;
+  position: static !important;
+  margin: 0;
+  z-index: 1;
+}
+
+/* Esquerda: controles */
+.energy-panel,
+.magnetic-panel,
+.temperature-panel {
+  grid-area: left !important;
+  position: static !important;
+  width: auto;
+  max-width: 320px;
+  margin: 0 0 12px 0;
+}
+
+/* Responsivo: empilha em telas menores */
+@media (max-width: 1024px) {
+  .visualization-area {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "info"
+      "reaction"
+      "left"
+      "stage";
+  }
+}
+
+/* Coluna direita fixa com os dois cards empilhados */
+.right-col {
+  /* ocupa a 3ª coluna (direita) e as 3 linhas do grid atual */
+  grid-column: 3 / 4;
+  grid-row: 1 / 4;
+  position: sticky;
+  top: 16px;                 /* ajuste conforme altura do header */
+  max-height: calc(100vh - 16px - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: auto;            /* rola só dentro da coluna quando necessário */
+}
+
+/* Dentro da coluna: info no topo e reação preenchendo o restante */
+#element-info { position: static; flex: 0 0 auto; }
+.reaction-panel { position: static; flex: 1 1 auto; overflow: auto; }
+
+:root {
+  --right-top: 16px;     /* deslocamento do topo */
+  --right-gap: 16px;     /* gap vertical entre os cards */
+  --info-h: 240px;       /* será atualizado por JS */
+}
+
+/* #element-info sempre visível no topo direito */
+#element-info {
+  position: sticky !important;
+  top: var(--right-top);
+  z-index: 3;
+}
+
+/* Reação fica colada logo abaixo e usa o restante da altura */
+.reaction-panel {
+  position: sticky !important;
+  top: calc(var(--right-top) + var(--info-h) + var(--right-gap));
+  max-height: calc(100vh - (var(--right-top) + var(--info-h) + 2*var(--right-gap)));
+  overflow: auto;
+  z-index: 2;
 }
